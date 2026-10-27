@@ -175,6 +175,15 @@ button,input{font-family:Tahoma,Verdana,Geneva,sans-serif;}
 .ghost{visibility:hidden;}
 .dnum{display:inline;white-space:nowrap;}
 .eq{font-variant-numeric:tabular-nums;}
+/* the word problem for the question on screen */
+.story{flex-shrink:0;margin-top:10px;padding:10px 14px;border-left:4px solid var(--blue-b);background:var(--blue-bg);
+  border-radius:0 10px 10px 0;font-size:1.05rem;line-height:1.5;color:var(--prompt);}
+.story[hidden]{display:none;}
+.story-lab{display:block;font-size:.72rem;font-weight:700;text-transform:uppercase;letter-spacing:.14em;color:var(--blue);margin-bottom:2px;}
+.story-txt{display:block;}
+.story .model{display:flex;align-items:center;justify-content:center;gap:8px;margin-top:6px;font-weight:600;color:var(--ink);}
+.story .model .stack{font-size:.9em;vertical-align:middle;}
+@media (max-width:640px){ .story{font-size:.9rem;padding:8px 10px;} }
 .qstrip{display:flex;flex-wrap:wrap;align-items:center;gap:3px;margin-top:8px;flex-shrink:0;}
 .qstrip .qlab{font-size:.72rem;font-weight:600;text-transform:uppercase;letter-spacing:.14em;color:var(--muted);margin-right:6px;}
 .qn{min-width:1.6rem;height:1.55rem;padding:0 3px;border-radius:6px;border:1.5px solid var(--edge);background:var(--white);color:var(--muted);
@@ -261,6 +270,7 @@ button,input{font-family:Tahoma,Verdana,Geneva,sans-serif;}
     </form>
     <div class="entry-err" id="eqErr" role="alert" hidden></div>
     <div class="qstrip" id="qstrip"></div>
+    <div class="story" id="story" hidden></div>
 
     <div class="work">
       <div class="fitbox" id="fitbox">
@@ -928,6 +938,31 @@ const WORKSHEET=["x + 0.85 = 15.25","c + 3/5 = 11/10","c + 148 = 161.8","6 + d =
   "m + 2981.1 = 6378.1","m - 18.65 = 6.35","21 = y - 12.5","a - 6.6 = -30","x - 7/4 = 2/3","-3 - d = -4.9",
   "z - 1.23 = 0.56","6x = 4.80","4s = 36","2.8 = -2h","10a = 80","5t = -15","6.25h = 50","50x = 400","0.350 = h/692",
   "k/5 = -7","-12 = r/3","b/4 = 13","-j/6 = 6","d/3 = 10,000","x/18 = 60"];
+/* the word problem that goes with each worksheet question (from One-Step Equations Practice); blank = just the equation */
+const STORIES={
+  1:"Lisa was given a raise of $0.85 an hour, which brought her hourly wage to $15.25. Solve the equation to find Lisa’s hourly wage before her raise.",
+  3:"While holding his cat, Ben steps on a scale. The scale reads 161.8 pounds. Ben weighs 148 pounds. What is the weight of the cat?",
+  7:"The radius of Earth is 6378.1 km, which is 2981.1 km longer than the radius of Mars. Solve the equation to find the radius of Mars.",
+  8:"After spending $18.65 on a movie ticket and snacks, Carlos has $6.35 left. How much money did he have before the movie?",
+  10:"6.6 less than a number is −30.",
+  13:"The difference of a number and 1.23 is 0.56.",
+  14:"Jamie bought six cans of cat food that each cost the same amount. She spent a total of $4.80. Solve the equation to find the cost of one can of cat food.",
+  15:"The perimeter of a square is 36 inches. Solve the equation to find the length of each side of the square.",
+  17:"An orange contains about 80 milligrams of vitamin C, which is 10 times as much as an apple contains. Solve the equation to find the amount of vitamin C in an apple.",
+  18:"The product of a number t and 5 is −15.",
+  19:"Lisa earns $6.25 per hour at her after-school job. Each week she earned $50. Solve the equation to find how many hours she worked each week.",
+  20:"The dragonfly is the fastest flying insect. It can move at a speed of about 50 feet per second. Find the approximate time (x) it takes a dragonfly to travel 400 feet.",
+  21:"A baseball player’s batting average is defined by the verbal model below. During the 2001 Major League Baseball season, Ichiro Suzuki of the Seattle Mariners batted 692 times and had a batting average of .350. How many hits did Suzuki have? Your answer will be a decimal because his batting average has been rounded."
+    +'<span class="model">Batting Average = '+'<span class="stack"><span class="t">Number of Hits</span><span class="bar"></span><span class="b">Number of At-Bats</span></span></span>',
+  24:"At a restaurant, Mike and his three friends decided to divide the bill evenly. If each person paid $13, then what was the total bill?",
+  26:"Matthew has an unknown number of dogs. His grandma became allergic to the dogs, so he had to give all his dogs away to three friends. Each friend ended up with exactly 10,000 dogs. How many dogs did Matthew start off with?",
+  27:"The mean height of students in Joe’s class is 60 inches. There are 18 students in his class. Solve the equation to find the total measure of all students’ heights."
+};
+function renderStory(){
+  const el=$("story"), s=Q && STORIES[Q];
+  el.hidden=!s;
+  el.innerHTML = s ? '<span class="story-lab">Question '+Q+'</span><span class="story-txt">'+s+'</span>' : "";
+}
 let Q=0;                       /* the worksheet question on screen; 0 = a problem the student typed  */
 function nextQ(n){ for(let k=n+1;k<=WORKSHEET.length;k++) if(WORKSHEET[k-1]) return k; return 0; }
 const DONE=new Set();
@@ -935,6 +970,7 @@ function startQ(n,focus){ Q=n; $("eqIn").value=WORKSHEET[n-1]; start(WORKSHEET[n
 function renderQ(){
   if(Q && S.step>=6) DONE.add(Q);
   $("qlabel").textContent = Q ? "Question "+Q : "Your problem";
+  renderStory();
   $("qstrip").innerHTML='<span class="qlab">Worksheet</span>'+WORKSHEET.map(function(e,i){
     const n=i+1;
     if(!e) return "";
